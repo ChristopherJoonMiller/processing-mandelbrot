@@ -1,6 +1,6 @@
 /**
  * Complex Number Class
- * by Christopher Joon Miller  
+ * by Christopher Joon Miller
  */
 
 class ComplexNumber
@@ -19,7 +19,7 @@ class ComplexNumber
   {
     double value = java.lang.Math.sqrt(real*real + imaginary*imaginary); //<>//
     return value;
-    
+
   }
 
   ComplexNumber add(ComplexNumber operand)
