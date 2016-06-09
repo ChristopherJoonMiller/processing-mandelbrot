@@ -8,6 +8,9 @@ void setup() {
 }
 
 boolean isDirty = true;
+double bailout = 4.0;
+int max_iterations = 100;
+
 void draw() {
   loadPixels();
   if( isDirty )
@@ -24,7 +27,6 @@ void draw() {
     double min_x = center.real - w / 2;
     double min_y = center.imaginary - h / 2;
     
-    int max_iterations = 100;
     for( int y = 0; y < height; y++)
     {
       double imaginary = min_y + y * dy;
@@ -33,13 +35,13 @@ void draw() {
         double real = min_x + x * dx;
         ComplexNumber z = new ComplexNumber(0,0);
         ComplexNumber c = new ComplexNumber(real,imaginary);
-         
+
         // calculate whether we're tending towards infinity
         int n = 0;
         while( n < max_iterations )
         {
           z = z.multiply(z).add(c);
-          if(z.value() >= 4.0)
+          if(z.magnitude() >= bailout)
           {
             break;
           }
@@ -55,6 +57,6 @@ void draw() {
         }
       }
     }
+    updatePixels();
   }
-  updatePixels();
 }

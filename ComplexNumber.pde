@@ -15,11 +15,9 @@ class ComplexNumber
     imaginary = i;
   }
 
-  double value()
+  double magnitude()
   {
-    double value = real + imaginary;
-    //print(real); //<>//
-    //print(imaginary);
+    double value = java.lang.Math.sqrt(real*real + imaginary*imaginary); //<>//
     return value;
     
   }
