@@ -8,41 +8,55 @@ import java.lang.*;
 // GLOBALS
 boolean isDirty = false;
 double bailout = 4.0;
-int max_iterations = 100;
- //<>//
+int max_iterations = 1000;
+int[] iteration_counts;
+int most_iterations = 0; // store the max in the scene
 double w, h, dx, dy, width_offset, height_offset, min_x, min_y, scale;
 ComplexNumber center;
 
 void setup() {
+  int resolution_x = 640;
+  int resolution_y = 360;
   size(640, 360);
-  background(255,255,0);
-  setScale(1.0);
-  setCenter(0, 0);
 
+  iteration_counts = new int[resolution_x * resolution_y];
+  background(255,255,0);
   // init buffer
   loadPixels();
+
+  updateScene(1.0, 0, 0);
+}
+
+void keyPressed()
+{
+  if(keyPressed)
+  {
+    if(key == 'i')
+    {
+      max_iterations = max_iterations * 10;
+      isDirty = true;
+    }
+    if(key == 'I')
+    {
+      max_iterations = max_iterations / 10;
+      isDirty = true;
+    }
+    println("updated max_iterations", max_iterations);
+  }
 }
 
 // https://processing.org/reference/mouseClicked_.html
-
 void mouseClicked() {
   // compare mouseX and mouseY to width and height
   // determine the localized position to zoome in
   double screen_x = mouseX / float(width);
   double screen_y = mouseY / float(height);
   double real_x = min_x + screen_x * w;
-  double imaginary_y = min_y + screen_y * h; //<>//
+  double imaginary_y = min_y + screen_y * h;
 
-  // zoom in or out?
-  if (keyPressed && keyCode == CONTROL)
-  {
-    setScale(scale * 2);
-  }
-  else
-  {
-    setScale(scale * 0.5);
-  }
-  setCenter(real_x, imaginary_y);
+  updateScene(
+    (keyPressed && keyCode == CONTROL) ? scale * 4.0 : scale * 0.25,
+    real_x, imaginary_y);
 }
 
 void setScale(double s)
@@ -51,8 +65,10 @@ void setScale(double s)
   w = 5 * scale; // width is 5 units on the complex plane (real axis)
   h = (w * height) / width; // height is derived based on screen size and how much of the real is shown
 
-  dx = w / width;
-  dy = h / height;
+  println("rendering a complex plane:", w, h);
+
+  dx = w / (double)width;
+  dy = h / (double)height;
 
   // store the translation from screen coords to cartesian coords
   width_offset = w / 2;
@@ -63,6 +79,12 @@ void setCenter(double real, double imaginary) {
   center = new ComplexNumber(real, imaginary);
   min_x = center.real - width_offset;
   min_y = center.imaginary - height_offset;
+}
+
+void updateScene(double scale, double real, double imaginary)
+{
+  setScale(scale);
+  setCenter(real, imaginary);
   isDirty = true;
 }
 
@@ -76,30 +98,48 @@ void draw() {
 void redraw()
 {
   isDirty = false;
-  for( int y = 0; y < height; y++)
+  // calculation pass
+  for(int y = 0; y < height; y++)
   {
     double imaginary = min_y + y * dy;
     for(int x = 0; x < width; x++)
     {
       double real = min_x + x * dx;
       ComplexNumber z = new ComplexNumber(0,0);
-      ComplexNumber c = new ComplexNumber(real,imaginary);
+      ComplexNumber c = new ComplexNumber(real, imaginary);
 
       // calculate whether we're tending towards infinity
       int n = 0;
+      most_iterations = 0;
       while( n < max_iterations )
       {
         // z = z^2 + c
         z = z.multiply(z).add(c);
+
+        if( n > most_iterations )
+        {
+          most_iterations = n;
+        }
+
+        n++;
+        iteration_counts[x + y * width] = n;
 
         // can't actually detect infinity, bailout if we're certain enough
         if(z.magnitude() >= bailout)
         {
           break;
         }
-        n++;
       }
+    }
+  }
+
+  // drawing pass
+  for(int y = 0; y < height; y++)
+  {
+    for(int x = 0; x < width; x++)
+    {
       //double nsmooth = (n - Math.log(Math.log(z.magnitude()))/Math.log(2));
+      int n = iteration_counts[x + y * width];
       double quotient = Math.max(0, Math.min(1, n / (float)max_iterations)); // between 0 and 1
       int val = Math.round(((float)quotient * 255.0));
       color col;
@@ -122,5 +162,7 @@ void redraw()
       }
     }
   }
+
+  // now update screen
   updatePixels();
 }
