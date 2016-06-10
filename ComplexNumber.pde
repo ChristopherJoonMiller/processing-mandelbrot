@@ -19,17 +19,18 @@ class ComplexNumber
   {
     double value = java.lang.Math.sqrt(real*real + imaginary*imaginary); //<>//
     return value;
-
   }
 
   ComplexNumber add(ComplexNumber operand)
   {
     return new ComplexNumber(real + operand.real, imaginary + operand.imaginary);
   }
+
   ComplexNumber subtract(ComplexNumber operand)
   {
     return new ComplexNumber(real - operand.real, imaginary - operand.imaginary);
   }
+
   ComplexNumber multiply(ComplexNumber operand)
   {
     return new ComplexNumber(
@@ -37,6 +38,7 @@ class ComplexNumber
       (imaginary * operand.real) + (real * operand.imaginary)
     );
   }
+
   ComplexNumber divide(ComplexNumber operand)
   {
     double denominator = (operand.real * operand.real + operand.imaginary * operand.imaginary);
