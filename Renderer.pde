@@ -23,6 +23,7 @@ class Renderer
     {
       max_iterations *= scaler;
       println("updated max_iterations", max_iterations);
+      isDirty = true;
     }
   }
 
@@ -71,73 +72,77 @@ class Renderer
 
   void update()
   {
-    isDirty = false;
-    // calculation pass
-    for(int y = 0; y < height; y++)
+    if(isDirty)
     {
-      double imaginary = min_y + y * dy;
-      for(int x = 0; x < width; x++)
+      isDirty = false;
+      most_iterations = 0;
+
+      // calculation pass
+      for(int y = 0; y < height; y++)
       {
-        double real = min_x + x * dx;
-        ComplexNumber z = new ComplexNumber(0,0);
-        ComplexNumber c = new ComplexNumber(real, imaginary);
-
-        // calculate whether we're tending towards infinity
-        int n = 0;
-        most_iterations = 0;
-        while( n < max_iterations )
+        double imaginary = min_y + y * dy;
+        for(int x = 0; x < width; x++)
         {
-          // z = z^2 + c
-          z = z.multiply(z).add(c);
+          double real = min_x + x * dx;
+          ComplexNumber z = new ComplexNumber(0,0);
+          ComplexNumber c = new ComplexNumber(real, imaginary);
 
-          if( n > most_iterations )
+          // calculate whether we're tending towards infinity
+          int n = 0;
+          while( n < max_iterations )
           {
-            most_iterations = n;
-          }
+            // z = z^2 + c
+            z = z.multiply(z).add(c);
 
-          n++;
-          iteration_counts[x + y * width] = n;
+            if( n > most_iterations )
+            {
+              most_iterations = n;
+            }
 
-          // can't actually detect infinity, bailout if we're certain enough
-          if(z.magnitude() >= bailout)
-          {
-            break;
+            n++;
+            iteration_counts[x + y * width] = n;
+
+            // can't actually detect infinity, bailout if we're certain enough
+            if(z.magnitude() >= bailout)
+            {
+              break;
+            }
           }
         }
       }
-    }
 
-    // drawing pass
-    for(int y = 0; y < height; y++)
-    {
-      for(int x = 0; x < width; x++)
+      // drawing pass
+      for(int y = 0; y < height; y++)
       {
-        //double nsmooth = (n - Math.log(Math.log(z.magnitude()))/Math.log(2));
-        int n = iteration_counts[x + y * width];
-        double quotient = Math.max(0, Math.min(1, n / (float)max_iterations)); // between 0 and 1
-        int val = Math.round(((float)quotient * 255.0));
-        color col;
-        if( quotient > 0.5 ) // close
+        for(int x = 0; x < width; x++)
         {
-          col = color( val, 255, val);
-        }
-        else // far
-        {
-          col = color( 0, val, 0);
-        }
+          //double nsmooth = (n - Math.log(Math.log(z.magnitude()))/Math.log(2));
+          int n = iteration_counts[x + y * width];
+          double quotient = Math.max(0, Math.min(1, n / (float)most_iterations)); // between 0 and 1
+          int val = Math.round(((float)quotient * 255.0));
+          color col;
+          if( quotient > 0.5 ) // close
+          {
+            col = color( val, 255, val);
+          }
+          else // far
+          {
+            col = color( 0, val, 0);
+          }
 
-        if(n == max_iterations) // in set
-        {
-          pixels[x+y*width] = color(40);
-        }
-        else
-        {
-          pixels[x+y*width] = col;
+          if(n == max_iterations) // in set
+          {
+            pixels[x+y*width] = color(40);
+          }
+          else
+          {
+            pixels[x+y*width] = col;
+          }
         }
       }
-    }
 
-    // now update screen
-    updatePixels();
+      // now update screen
+      updatePixels();
+    }
   }
 }

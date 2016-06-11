@@ -21,12 +21,12 @@ void keyPressed()
     if(key == 'i')
     {
       // increase iterations
-      r.updateMaxIterations(2);
+      r.updateMaxIterations(2.0);
     }
     if(key == 'I')
     {
       // decrease iterations
-      r.updateMaxIterations(.5);
+      r.updateMaxIterations(0.5);
     }
   }
 }
