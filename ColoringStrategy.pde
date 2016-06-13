@@ -26,6 +26,11 @@ class SmoothedGreenColoringStrategy implements ColoringStrategy
 {
   public color getColor(int n, int most_iterations, int max_iterations)
   {
+    if(n == max_iterations) // in set
+    {
+      return color(40);
+    }
+
     double quotient = Math.max(0, Math.min(1, n / (float)most_iterations)); // between 0 and 1
     int val = Math.round(((float)quotient * 255.0));
     color col;
@@ -38,14 +43,7 @@ class SmoothedGreenColoringStrategy implements ColoringStrategy
       col = color( 0, val, 0);
     }
 
-    if(n == max_iterations) // in set
-    {
-      return color(40);
-    }
-    else
-    {
-      return col;
-    }
+    return col;
   }
 
   public String getName()
@@ -92,6 +90,11 @@ class PalettizedColoringStrategy implements ColoringStrategy
 
   public color getColor(int n, int most_iterations, int max_iterations)
   {
+    if(n == max_iterations) // in set
+    {
+      return color(40);
+    }
+
     float quotient = Math.max(0, Math.min(1, n / (float)most_iterations)); // between 0 and 1
     int slot = round(quotient * p.getSize()); //<>//
 

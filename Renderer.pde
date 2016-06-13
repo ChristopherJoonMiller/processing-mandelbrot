@@ -21,8 +21,10 @@ class Renderer
     // init buffer
     loadPixels();
     updateScene(1.0, 0, 0);
-    color[] colors = {color(0,0,0), color(1,1,1)};
-    Palette p = new Palette("b/w",colors);
+    //color[] whites_and_blacks = {color(255,255,255), color(0,0,0), color(255,255,255)};
+    //Palette p = new Palette("b/w", whites_and_blacks);
+    color[] rgb = {color(255,0,0), color(0,255,0), color(0,0,255)};
+    Palette p = new Palette("rgb", rgb);
     colorizer = new PalettizedColoringStrategy(p);
   }
 
