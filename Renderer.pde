@@ -1,3 +1,8 @@
+/**
+ * Pixel Renderer Class
+ * by Christopher Joon Miller
+ */
+
 class Renderer
 {
   boolean isDirty = false;
@@ -7,6 +12,7 @@ class Renderer
   int most_iterations = 0; // store the max in the scene
   double w, h, dx, dy, width_offset, height_offset, min_x, min_y, scale;
   ComplexNumber center;
+  ColoringStrategy colorizer;
 
   Renderer()
   {
@@ -15,6 +21,9 @@ class Renderer
     // init buffer
     loadPixels();
     updateScene(1.0, 0, 0);
+    color[] colors = {color(0,0,0), color(1,1,1)};
+    Palette p = new Palette("b/w",colors);
+    colorizer = new PalettizedColoringStrategy(p);
   }
 
   void updateMaxIterations(double scaler)
@@ -77,6 +86,7 @@ class Renderer
       isDirty = false;
       most_iterations = 0;
 
+      println("Starting Calculations");
       // calculation pass
       for(int y = 0; y < height; y++)
       {
@@ -112,32 +122,14 @@ class Renderer
       }
 
       // drawing pass
+      println("Drawing Pass", colorizer.getName());
       for(int y = 0; y < height; y++)
       {
         for(int x = 0; x < width; x++)
         {
           //double nsmooth = (n - Math.log(Math.log(z.magnitude()))/Math.log(2));
           int n = iteration_counts[x + y * width];
-          double quotient = Math.max(0, Math.min(1, n / (float)most_iterations)); // between 0 and 1
-          int val = Math.round(((float)quotient * 255.0));
-          color col;
-          if( quotient > 0.5 ) // close
-          {
-            col = color( val, 255, val);
-          }
-          else // far
-          {
-            col = color( 0, val, 0);
-          }
-
-          if(n == max_iterations) // in set
-          {
-            pixels[x+y*width] = color(40);
-          }
-          else
-          {
-            pixels[x+y*width] = col;
-          }
+          pixels[x+y*width] = colorizer.getColor(n, most_iterations, max_iterations); //<>//
         }
       }
 
