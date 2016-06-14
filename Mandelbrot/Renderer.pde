@@ -23,9 +23,11 @@ class Renderer
     updateScene(1.0, 0, 0);
     //color[] whites_and_blacks = {color(255,255,255), color(0,0,0), color(255,255,255)};
     //Palette p = new Palette("b/w", whites_and_blacks);
-    color[] rgb = {color(255,0,0), color(0,255,0), color(0,0,255)};
-    Palette p = new Palette("rgb", rgb);
-    colorizer = new PalettizedColoringStrategy(p);
+    //color[] rgb = {color(255,0,0), color(0,255,0), color(0,0,255)};
+    //Palette p = new Palette("rgb", rgb);
+    color[] orange_coasts = {color(255,149,85), color(255,197,161), color(255,248,246), color(153,237,255), color(55,228,255)};
+    Palette oc = new Palette("Orange Coasts", orange_coasts);
+    colorizer = new PalettizedColoringStrategy(oc);
   }
 
   void updateMaxIterations(double scaler)
