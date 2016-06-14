@@ -129,11 +129,14 @@ class Renderer
       println("Drawing Pass", colorizer.getName());
       for(int y = 0; y < height; y++)
       {
+        double imaginary = min_y + y * dy;
         for(int x = 0; x < width; x++)
         {
+          double real = min_x + x * dx;
+          ComplexNumber c = new ComplexNumber(real, imaginary);
           //double nsmooth = (n - Math.log(Math.log(z.magnitude()))/Math.log(2));
           int n = iteration_counts[x + y * width];
-          pixels[x+y*width] = colorizer.getColor(n, most_iterations, max_iterations); //<>//
+          pixels[x+y*width] = colorizer.getColor(n, most_iterations, max_iterations, c); //<>//
         }
       }
 

@@ -3,15 +3,18 @@
  * by Christopher Joon Miller
  */
 
+// Todo, make math lib
+double ONE_OVER_LOG2 = 1 / Math.log(2);
+
 public interface ColoringStrategy
 {
-  public color getColor(int n, int most_iterations, int max_iterations);
+  public color getColor(int n, int most_iterations, int max_iterations, ComplexNumber c);
   public String getName();
 }
 
 class BlackColoringStrategy implements ColoringStrategy
 {
-  public color getColor(int n, int most_iterations, int max_iterations)
+  public color getColor(int n, int most_iterations, int max_iterations, ComplexNumber c)
   {
     return n == max_iterations ? color(0,0,0) : color(255,255,255);
   }
@@ -24,7 +27,7 @@ class BlackColoringStrategy implements ColoringStrategy
 
 class SmoothedGreenColoringStrategy implements ColoringStrategy
 {
-  public color getColor(int n, int most_iterations, int max_iterations)
+  public color getColor(int n, int most_iterations, int max_iterations, ComplexNumber c)
   {
     if(n == max_iterations) // in set
     {
@@ -88,16 +91,16 @@ class PalettizedColoringStrategy implements ColoringStrategy
     p = palette;
   }
 
-  public color getColor(int n, int most_iterations, int max_iterations)
+  public color getColor(int n, int most_iterations, int max_iterations, ComplexNumber c)
   {
     if(n == max_iterations) // in set
     {
       return color(40);
     }
-
-    //float quotient = Math.max(0, Math.min(1, n / (float)most_iterations)); // between 0 and 1
-    //int slot = round(quotient * p.getSize()); //<>//
-    int slot = n % p.getSize();
+ //<>//
+    double size = Math.sqrt(c.real * c.real + c.imaginary * c.imaginary);
+    double smoothed = Math.log(Math.log(n) * ONE_OVER_LOG2) * ONE_OVER_LOG2;
+    int slot = (int)(Math.sqrt(n - smoothed)) % p.getSize();
 
     return p.getColor(slot);
   }
