@@ -95,8 +95,9 @@ class PalettizedColoringStrategy implements ColoringStrategy
       return color(40);
     }
 
-    float quotient = Math.max(0, Math.min(1, n / (float)most_iterations)); // between 0 and 1
-    int slot = round(quotient * p.getSize()); //<>//
+    //float quotient = Math.max(0, Math.min(1, n / (float)most_iterations)); // between 0 and 1
+    //int slot = round(quotient * p.getSize()); //<>//
+    int slot = n % p.getSize();
 
     return p.getColor(slot);
   }
