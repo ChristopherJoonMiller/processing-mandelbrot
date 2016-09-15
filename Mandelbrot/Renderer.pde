@@ -2,6 +2,7 @@
  * Pixel Renderer Class
  * by Christopher Joon Miller
  */
+import processing.core.*;
 
 class Renderer
 {
@@ -12,22 +13,58 @@ class Renderer
   int most_iterations = 0; // store the max in the scene
   double w, h, dx, dy, width_offset, height_offset, min_x, min_y, scale;
   ComplexNumber center;
-  ColoringStrategy colorizer;
+  ArrayList<ColoringStrategy> colorizers = new ArrayList<ColoringStrategy>();
+  int selectedColorizer = 0;
+  processing.core.PApplet parentApp;
+  GUI gui;
 
-  Renderer()
+  Renderer(processing.core.PApplet parent)
   {
+    // Store the parent app reference
+    parentApp = parent;
+
+    // Create a GUI
+    gui = new GUI(this); //<>//
+
     iteration_counts = new int[width * height];
     background(255,255,0);
     // init buffer
     loadPixels();
-    updateScene(1.0, 0, 0);
-    //color[] whites_and_blacks = {color(255,255,255), color(0,0,0), color(255,255,255)};
-    //Palette p = new Palette("b/w", whites_and_blacks);
-    //color[] rgb = {color(255,0,0), color(0,255,0), color(0,0,255)};
-    //Palette p = new Palette("rgb", rgb);
+
+    // Black
+    registerColoringStrategy(new BlackColoringStrategy());
+
+    // Orange Float
     color[] orange_floats = {color(252,148,88), color(252,198,158), color(252,248,248), color(152,238,252), color(52,228,252)};
     Palette of = new Palette("Orange Floats", orange_floats);
-    colorizer = new PalettizedColoringStrategy(of);
+    registerColoringStrategy(new PalettizedColoringStrategy(of));
+
+    // set up drop list
+    gui.initColoringStrategySelector(); //<>//
+
+    // finally draw
+    updateScene(1.0, 0, 0);
+  }
+
+  processing.core.PApplet getParentApp()
+  {
+    return parentApp;
+  }
+
+  ArrayList<ColoringStrategy> getColoringStrategies()
+  {
+    return colorizers;
+  }
+
+  void setSelectedColoringStrategy(int index)
+  {
+    selectedColorizer = index;
+    isDirty = true;
+  }
+
+  void registerColoringStrategy(ColoringStrategy cs)
+  {
+    colorizers.add(cs);
   }
 
   void updateMaxIterations(double scaler)
@@ -87,6 +124,7 @@ class Renderer
   {
     if(isDirty)
     {
+      ColoringStrategy colorizer = colorizers.get(selectedColorizer);
       isDirty = false;
       most_iterations = 0;
 
@@ -136,12 +174,17 @@ class Renderer
           ComplexNumber c = new ComplexNumber(real, imaginary);
           //double nsmooth = (n - Math.log(Math.log(z.magnitude()))/Math.log(2));
           int n = iteration_counts[x + y * width];
-          pixels[x+y*width] = colorizer.getColor(n, most_iterations, max_iterations, c); //<>//
+          pixels[x+y*width] = colorizer.getColor(n, most_iterations, max_iterations, c);
         }
       }
 
       // now update screen
       updatePixels();
     }
+  }
+  void toggleGui()
+  {
+    gui.setVisible(!gui.isVisible);
+    isDirty = true;
   }
 }
