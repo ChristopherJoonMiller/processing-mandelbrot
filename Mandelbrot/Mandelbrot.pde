@@ -4,26 +4,36 @@
  */
 
 import java.lang.*;
+import processing.core.*;
+import java.util.ArrayList;
+
+// Create an Applet reference
+processing.core.PApplet thisApplet;
 
 // Create a renderer
 Renderer r;
 
 void setup()
 {
+  thisApplet = this;
   size(640, 360);
-  r = new Renderer();
+  r = new Renderer(thisApplet);
 }
 
 void keyPressed()
 {
   if(keyPressed)
   {
-    if(key == 'i')
+    if(key == '\t')
+    {
+      r.toggleGui();
+    }
+    else if(key == 'i')
     {
       // increase iterations
       r.updateMaxIterations(2.0);
     }
-    if(key == 'I')
+    else if(key == 'I')
     {
       // decrease iterations
       r.updateMaxIterations(0.5);
@@ -31,10 +41,10 @@ void keyPressed()
   }
 }
 
-void mouseClicked()
-{
-  r.zoom();
-}
+//void mouseClicked()
+//{
+//  r.zoom();
+//}
 
 void draw()
 {
