@@ -7,17 +7,19 @@ import java.lang.*;
 import processing.core.*;
 import java.util.ArrayList;
 
-// Create an Applet reference
-processing.core.PApplet thisApplet;
-
 // Create a renderer
 Renderer r;
 
 void setup()
 {
-  thisApplet = this;
   size(640, 360);
-  r = new Renderer(thisApplet);
+  r = new Renderer(this);
+
+  // complete all setup
+  initColoringStrategies(r);
+
+  // tell renderer to initialize the gui
+  r.initGui();
 }
 
 void keyPressed()
@@ -41,10 +43,10 @@ void keyPressed()
   }
 }
 
-//void mouseClicked()
-//{
-//  r.zoom();
-//}
+void mouseClicked()
+{
+  r.zoom();
+}
 
 void draw()
 {
