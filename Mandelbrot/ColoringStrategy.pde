@@ -77,7 +77,7 @@ class Palette
 
   color getColor(int slot)
   {
-    slot = Math.max(0, Math.min(colors.length - 1, slot)); // between 0 and 1
+    slot = Math.max(0, Math.min(colors.length - 1, slot)); // clamp between 0 and colors.length -1
     return colors[slot];
   }
 }
@@ -109,4 +109,18 @@ class PalettizedColoringStrategy implements ColoringStrategy
   {
     return "Palettized " + p.getName();
   }
+}
+
+void initColoringStrategies(Renderer r)
+{
+    // Black
+    r.registerColoringStrategy(new BlackColoringStrategy());
+
+    // Smoothed Green
+    r.registerColoringStrategy(new SmoothedGreenColoringStrategy());
+
+    // Orange Float
+    color[] orange_floats = {color(252,148,88), color(252,198,158), color(252,248,248), color(152,238,252), color(52,228,252)};
+    Palette of = new Palette("Orange Floats", orange_floats);
+    r.registerColoringStrategy(new PalettizedColoringStrategy(of));
 }
