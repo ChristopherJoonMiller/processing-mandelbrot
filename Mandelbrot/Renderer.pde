@@ -10,6 +10,8 @@ class Renderer
   double bailout = 4.0;
   int max_iterations = 1000;
   int[] iteration_counts;
+  int pixel_count = 0;
+  ComplexNumber[] complexes; // compute and store all complex numbers
   int most_iterations = 0; // store the max in the scene
   double w, h, dx, dy, width_offset, height_offset, min_x, min_y, scale;
   ComplexNumber center;
@@ -26,22 +28,14 @@ class Renderer
     // Create a GUI
     gui = new GUI(this); //<>//
 
-    iteration_counts = new int[width * height];
-    background(255,255,0);
+    pixel_count = width * height;
+    iteration_counts = new int[pixel_count];
+    complexes = new ComplexNumber[pixel_count];
+
     // init buffer
+    background(0, 0, 0);
     loadPixels();
-
-    // Black
-    registerColoringStrategy(new BlackColoringStrategy());
-
-    // Orange Float
-    color[] orange_floats = {color(252,148,88), color(252,198,158), color(252,248,248), color(152,238,252), color(52,228,252)};
-    Palette of = new Palette("Orange Floats", orange_floats);
-    registerColoringStrategy(new PalettizedColoringStrategy(of));
-
-    // set up drop list
-    gui.initColoringStrategySelector(); //<>//
-
+ //<>//
     // finally draw
     updateScene(1.0, 0, 0);
   }
@@ -49,6 +43,12 @@ class Renderer
   processing.core.PApplet getParentApp()
   {
     return parentApp;
+  }
+
+  void initGui()
+  {
+    // call this after all of the coloring strategies have registered themselves
+    gui.initColoringStrategySelector();
   }
 
   ArrayList<ColoringStrategy> getColoringStrategies()
@@ -79,6 +79,10 @@ class Renderer
 
   void zoom()
   {
+    if( gui.isVisible )
+    {
+      return;
+    }
     // compare mouseX and mouseY to width and height
     // determine the localized position to zoome in
     double screen_x = mouseX / float(width);
@@ -108,9 +112,24 @@ class Renderer
   }
 
   void setCenter(double real, double imaginary) {
-    center = new ComplexNumber(real, imaginary);
-    min_x = center.real - width_offset;
-    min_y = center.imaginary - height_offset;
+    //center = new ComplexNumber(real, imaginary);
+    min_x = real - width_offset;
+    min_y = imaginary - height_offset;
+
+    // now that we have our min limit
+    // calculate the complexes once
+    int i = 0;
+    for(int y = 0; y < height; y++)
+    {
+      double imaginary_y = min_y + y * dy;
+      for(int x = 0; x < width; x++)
+      {
+        double real_x = min_x + x * dx;
+        ComplexNumber c = new ComplexNumber(real_x, imaginary_y);
+        complexes[i] = c;
+        i++;
+      }
+    }
   }
 
   void updateScene(double scale, double real, double imaginary)
@@ -128,54 +147,43 @@ class Renderer
       isDirty = false;
       most_iterations = 0;
 
+      // initialize z;
+      ComplexNumber z = new ComplexNumber(0,0);
+
       println("Starting Calculations");
+
       // calculation pass
-      for(int y = 0; y < height; y++)
+      for(int i = 0; i < pixel_count; i++)
       {
-        double imaginary = min_y + y * dy;
-        for(int x = 0; x < width; x++)
+        z.real = z.imaginary = 0; // assigning 0s is faster than re allocating
+
+        // calculate whether we're tending towards infinity
+        int n = 0;
+        while( n < max_iterations )
         {
-          double real = min_x + x * dx;
-          ComplexNumber z = new ComplexNumber(0,0);
-          ComplexNumber c = new ComplexNumber(real, imaginary);
+          // z = z^2 + c
+          z = z.multiply(z).add(complexes[i]);
 
-          // calculate whether we're tending towards infinity
-          int n = 0;
-          while( n < max_iterations )
+          if( n > most_iterations )
           {
-            // z = z^2 + c
-            z = z.multiply(z).add(c);
+            most_iterations = n;
+          }
 
-            if( n > most_iterations )
-            {
-              most_iterations = n;
-            }
+          n++;
+          iteration_counts[i] = n;
 
-            n++;
-            iteration_counts[x + y * width] = n;
-
-            // can't actually detect infinity, bailout if we're certain enough
-            if(z.magnitude() >= bailout)
-            {
-              break;
-            }
+          // can't actually detect infinity, bailout if we're certain enough
+          if(z.magnitude() >= bailout)
+          {
+            break;
           }
         }
       }
-
       // drawing pass
       println("Drawing Pass", colorizer.getName());
-      for(int y = 0; y < height; y++)
+      for(int i = 0; i < pixel_count; i++)
       {
-        double imaginary = min_y + y * dy;
-        for(int x = 0; x < width; x++)
-        {
-          double real = min_x + x * dx;
-          ComplexNumber c = new ComplexNumber(real, imaginary);
-          //double nsmooth = (n - Math.log(Math.log(z.magnitude()))/Math.log(2));
-          int n = iteration_counts[x + y * width];
-          pixels[x+y*width] = colorizer.getColor(n, most_iterations, max_iterations, c);
-        }
+        pixels[i] = colorizer.getColor(iteration_counts[i], most_iterations, max_iterations, complexes[i]);
       }
 
       // now update screen
@@ -184,7 +192,11 @@ class Renderer
   }
   void toggleGui()
   {
+    // when hiding the UI we need to redraw ourselves
+    if(gui.isVisible)
+    {
+      isDirty = true;
+    }
     gui.setVisible(!gui.isVisible);
-    isDirty = true;
   }
 }
