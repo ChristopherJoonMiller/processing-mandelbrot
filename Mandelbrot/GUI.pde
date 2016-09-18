@@ -1,3 +1,8 @@
+/**
+ * GUI Class
+ * by Christopher Joon Miller
+ */
+
 import g4p_controls.*;
 import processing.core.PApplet;
 
