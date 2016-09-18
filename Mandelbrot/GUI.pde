@@ -6,6 +6,8 @@
 import g4p_controls.*;
 import processing.core.PApplet;
 
+// need to make all GUI elements as globals
+// so that we can test against them in handleEvents
 GDropList ColoringStrategySelector;
 
 public void handleButtonEvents(GButton button, GEvent event) {
